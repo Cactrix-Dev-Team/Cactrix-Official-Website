@@ -8,6 +8,7 @@ import {
   ArrowRight, Send
 } from 'lucide-react';
 import FadeIn from '../animations/FadeIn';
+import logoImg from '../../assets/logo.png';
 
 const Footer = () => {
   const footerLinks = {
@@ -85,10 +86,11 @@ const Footer = () => {
           {/* Brand */}
           <FadeIn className="lg:col-span-2">
             <Link to="/" className="inline-flex items-center gap-2 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">N</span>
-              </div>
-              <span className="font-display font-bold text-2xl">CACTRIX</span>
+              <img 
+                              src={logoImg} 
+                              alt="CACTRIX Logo" 
+                              className="h-12 w-auto object-contain transition-all duration-300 dark:invert dark:brightness-0 dark:sepia-0 dark:contrast-200"
+                            />
             </Link>
             <p className="text-dark-400 mb-6 max-w-sm">
               Transforming ideas into digital reality. We build innovative software solutions that drive business growth.
