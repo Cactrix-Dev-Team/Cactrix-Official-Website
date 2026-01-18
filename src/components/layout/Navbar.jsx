@@ -1,126 +1,252 @@
-// src/components/sections/Hero.jsx
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+// src/components/layout/Navbar.jsx
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, ChevronDown } from 'lucide-react';
+import ThemeToggle from '../ui/ThemeToggle';
 import Button from '../ui/Button';
-import TextReveal from '../animations/TextReveal';
-import Scene3D from '../3d/Scene3D';
+import { useScrollPosition } from '../../hooks/useScrollPosition';
 
-const Hero = () => {
+// 1. Services Data Import
+import { servicesData } from '../../data/servicesData';
+
+// 2. Logo Import (Path එක check කරගන්න)
+// Logo එක assets folder එකේ තියෙන විදියට:
+import logoImg from '../../assets/logo.png';
+
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const { scrollPosition, scrollDirection } = useScrollPosition();
+  const location = useLocation();
+
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { 
+      name: 'Services', 
+      path: '/services',
+      dropdown: servicesData.map(service => ({
+        name: service.title,
+        path: `/services/${service.slug}`
+      }))
+    },
+    { name: 'Portfolio', path: '/portfolio' },
+    { name: 'About', path: '/about' },
+    { name: 'Pricing', path: '/pricing' },
+    { name: 'Blog', path: '/blog' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
+
+  const isScrolled = scrollPosition > 20;
+  // Scroll Down කරනකොට Navbar එක හංගනවා, Up කරනකොට පෙන්නනවා (Modern UX)
+  const isHidden = scrollDirection === 'down' && scrollPosition > 200;
+
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* 3D Background */}
-      <Scene3D className="opacity-60" />
-
-      {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-white/80 dark:from-dark-950/80 dark:via-transparent dark:to-dark-950/80" />
-
-      {/* Content */}
-      <div className="relative container-custom pt-32 pb-20">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 mb-8"
-          >
-            <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
-              Welcome to the Future of Software
-            </span>
-          </motion.div>
-
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-8 leading-tight">
-            <TextReveal>We Build Digital</TextReveal>
-            <br />
-            {/* 
-               Fix: TextReveal එක අයින් කරලා කෙලින්ම motion.span එකක් පාවිච්චි කලා. 
-               මේකෙන් gradient text එක අනිවාර්යයෙන්ම පේනවා.
-            */}
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="gradient-text inline-block pb-2" // pb-2 දැම්මේ සමහර font වල යට කෑල්ල කැපෙන නිසා
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: isHidden ? -100 : 0 }}
+      transition={{ duration: 0.3 }}
+      className={`
+        fixed top-0 left-0 right-0 z-50
+        transition-all duration-300 ease-in-out
+        ${isScrolled 
+          ? 'py-3 bg-white/80 dark:bg-dark-950/80 backdrop-blur-lg shadow-lg border-b border-dark-200/50 dark:border-dark-800/50' 
+          : 'py-5 bg-transparent'
+        }
+      `}
+    >
+      <div className="container-custom">
+        <nav className="flex items-center justify-between">
+          
+          {/* --- Logo Section --- */}
+          <Link to="/" className="relative z-50">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2"
             >
-              Experiences
-            </motion.span>
-          </h1>
+              {/* 
+                 Logo Image:
+                 - h-10 w-auto: උස fix කරලා width auto ගන්නවා.
+                 - dark:invert: මේක තමයි මැජික් එක. Dark mode එකේදී කළු logo එක සුදු කරනවා.
+                 - object-contain: Image එක ඇදෙන්නේ නැතුව තියාගන්නවා.
+              */}
+              <img 
+                src={logoImg} 
+                alt="CACTRIX Logo" 
+                className="h-12 w-auto object-contain transition-all duration-300 dark:invert dark:brightness-0 dark:sepia-0 dark:contrast-200"
+              />
+            </motion.div>
+          </Link>
 
-          {/* Subheading - Font Design Updated */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg md:text-xl leading-relaxed text-dark-600 dark:text-dark-300 mb-10 max-w-2xl mx-auto font-light tracking-wide"
-          >
-            Transform your ideas into powerful software solutions. We create stunning websites, mobile apps, and cloud solutions that drive business growth.
-          </motion.p>
+          {/* --- Desktop Navigation (Modern Pill Style) --- */}
+          <div className="hidden lg:flex items-center bg-dark-50/50 dark:bg-dark-900/30 px-2 py-1.5 rounded-full border border-dark-100/50 dark:border-dark-800/50 backdrop-blur-sm">
+            {navItems.map((item) => (
+              <div
+                key={item.name}
+                className="relative group"
+                onMouseEnter={() => item.dropdown && setActiveDropdown(item.name)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <Link
+                  to={item.path}
+                  className={`
+                    px-4 py-2 rounded-full text-sm font-semibold
+                    transition-all duration-300
+                    flex items-center gap-1
+                    ${location.pathname === item.path 
+                      ? 'text-primary-600 bg-white dark:bg-dark-800 shadow-sm' 
+                      : 'text-dark-600 dark:text-dark-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white/50 dark:hover:bg-dark-800/50'
+                    }
+                  `}
+                >
+                  {item.name}
+                  {item.dropdown && (
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${activeDropdown === item.name ? 'rotate-180' : ''}`} />
+                  )}
+                </Link>
 
-          {/* CTA Buttons - Watch Demo Removed */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Button 
-              variant="primary" 
-              size="lg"
-              icon={<ArrowRight className="w-5 h-5" />}
-            >
-              Start Your Project
-            </Button>
-            {/* Watch Demo Button removed from here */}
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto border-t border-dark-100 dark:border-dark-800 pt-8"
-          >
-            {[
-              { value: '250+', label: 'Projects Delivered' },
-              { value: '50+', label: 'Happy Clients' },
-              { value: '15+', label: 'Awards Won' },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-display font-bold text-dark-900 dark:text-white mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm font-medium text-dark-500 dark:text-dark-400">
-                  {stat.label}
-                </div>
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {item.dropdown && activeDropdown === item.name && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 mt-4 w-60 p-2 bg-white/95 dark:bg-dark-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden"
+                    >
+                      {item.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          className="block px-4 py-3 rounded-xl text-sm font-medium text-dark-600 dark:text-dark-300 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-dark-800 transition-all"
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
-          </motion.div>
-        </div>
+          </div>
+
+          {/* --- Right Side Actions --- */}
+          <div className="hidden lg:flex items-center gap-3">
+            <ThemeToggle />
+            <Button variant="primary" size="md" className="shadow-lg shadow-primary-500/20">
+              Get Started
+            </Button>
+          </div>
+
+          {/* --- Mobile Menu Toggle --- */}
+          <div className="flex lg:hidden items-center gap-3">
+            <ThemeToggle />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="relative z-50 p-2 rounded-full hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
+            >
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="w-6 h-6 text-dark-900 dark:text-white" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="w-6 h-6 text-dark-900 dark:text-white" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
+        </nav>
       </div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-dark-300 dark:border-dark-600 flex items-start justify-center p-2"
-        >
+      {/* --- Mobile Menu Dropdown --- */}
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full bg-primary-500"
-          />
-        </motion.div>
-      </motion.div>
-    </section>
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: '100vh' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="lg:hidden fixed top-0 left-0 w-full bg-white dark:bg-dark-950 overflow-y-auto pt-24 pb-10 px-4"
+          >
+            <div className="flex flex-col space-y-6 container-custom">
+              {navItems.map((item, index) => (
+                <div key={item.name} className="border-b border-dark-100 dark:border-dark-800 pb-4 last:border-0">
+                   {item.dropdown ? (
+                      <div className="space-y-4">
+                         <div className="text-xl font-bold text-dark-900 dark:text-white">{item.name}</div>
+                         <div className="grid grid-cols-1 gap-2 pl-4">
+                            {item.dropdown.map((subItem) => (
+                               <Link
+                                  key={subItem.path}
+                                  to={subItem.path}
+                                  onClick={() => setIsOpen(false)}
+                                  className="block py-2 px-4 rounded-lg bg-dark-50 dark:bg-dark-900 text-dark-600 dark:text-dark-300 hover:text-primary-500"
+                               >
+                                  {subItem.name}
+                               </Link>
+                            ))}
+                         </div>
+                      </div>
+                   ) : (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Link
+                        to={item.path}
+                        onClick={() => setIsOpen(false)}
+                        className={`
+                          block text-xl font-bold
+                          ${location.pathname === item.path 
+                            ? 'text-primary-500' 
+                            : 'text-dark-900 dark:text-white'
+                          }
+                        `}
+                      >
+                        {item.name}
+                      </Link>
+                    </motion.div>
+                   )}
+                </div>
+              ))}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="pt-6"
+              >
+                <Button variant="primary" size="lg" className="w-full text-lg shadow-xl shadow-primary-500/20">
+                  Get Started Now
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 
-export default Hero;
+export default Navbar;
