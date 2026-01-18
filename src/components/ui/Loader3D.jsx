@@ -130,7 +130,7 @@ const Loader3D = ({ companyName = "CACTRIX ", tagline = "INNOVATIONS" }) => {
                 }}
                 className="inline-block"
                 style={{
-                  background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #22d3ee 100%)',
+                  background: 'linear-gradient(135deg, #63f190 0%, #a855f7 50%, #22d3ee 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   filter: 'drop-shadow(0 0 30px rgba(99,102,241,0.5))'
@@ -297,7 +297,7 @@ const Loader3D = ({ companyName = "CACTRIX ", tagline = "INNOVATIONS" }) => {
         transition={{ delay: 3.2 }}
         className="absolute bottom-8 right-8 text-xs text-gray-600 font-mono"
       >
-        © 2024 {companyName}
+        © 2026 {companyName}
       </motion.div>
 
       {/* CSS Animations */}
