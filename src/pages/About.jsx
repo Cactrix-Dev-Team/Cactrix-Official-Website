@@ -8,6 +8,8 @@ import Team from '../components/sections/Team';
 import Stats from '../components/sections/Stats';
 import CTA from '../components/sections/CTA';
 
+//testing done
+
 const values = [
   { icon: Target, title: 'Excellence', description: 'We strive for excellence in every project we undertake.' },
   { icon: Heart, title: 'Passion', description: 'We are passionate about creating meaningful digital experiences.' },
